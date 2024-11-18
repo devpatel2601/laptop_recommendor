@@ -3,6 +3,7 @@ package com.example.laptoprecommendationsystem.controller;
 import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.service.LaptopService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -112,5 +113,18 @@ public class LaptopController {
     public ResponseEntity<Void> deleteLaptop(@PathVariable Long id) {
         laptopService.deleteLaptop(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    /**
+     * Get paginated laptops.
+     * @param page The page number (0-based index).
+     * @param size The number of laptops per page.
+     * @return A page of laptops.
+     */
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<Laptop>> getLaptopsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<Laptop> laptopsPage = laptopService.getLaptopsPaginated(page, size);
+        return ResponseEntity.ok(laptopsPage);
     }
 }

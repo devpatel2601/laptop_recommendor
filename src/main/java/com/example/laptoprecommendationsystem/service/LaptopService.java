@@ -4,6 +4,9 @@ import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.repository.LaptopRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,16 @@ public class LaptopService {
         return laptopRepository.findAll(sort);
     }
 
+    /**
+     * Get a paginated list of laptops.
+     * @param page The page number to retrieve (0-based index).
+     * @param size The number of laptops per page.
+     * @return A page of laptops.
+     */
+    public Page<Laptop> getLaptopsPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return laptopRepository.findAll(pageable);
+    }
 
     public Laptop getLaptopById(Long id) {
         Optional<Laptop> optionalLaptop = laptopRepository.findById(id);
