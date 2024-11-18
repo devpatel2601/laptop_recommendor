@@ -11,7 +11,7 @@ public class Laptop {
 
     private String productName;
     private double price;
-    @Column(name = "Image", length = 1000)
+        @Column(name = "Image", length = 1000)
     private String image;
     private String os;
     private String processor;
