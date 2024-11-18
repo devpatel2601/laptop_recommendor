@@ -2,20 +2,21 @@ package com.example.laptoprecommendationsystem.service;
 
 import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.repository.LaptopRepository;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 
 @Service
 public class LaptopService {
 
     @Autowired
     private LaptopRepository laptopRepository;
-
+    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel.xlsx";
     /**
      * Get all laptops with optional sorting based on the field and order.
      * @param sortBy The field by which to sort (e.g., "price", "memory", "processor").
@@ -113,6 +114,31 @@ public class LaptopService {
 
         return recommendedLaptops;
     }
+
+
+    /**
+     * Helper method to get the cell value as a String.
+     * @param cell The cell to read.
+     * @return The cell's value as a String.
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
+    }
+
+
+
 
     /**
      * Helper method to parse memory size from a string (e.g., "8GB" to 8).
