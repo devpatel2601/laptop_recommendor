@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +38,111 @@ public class LaptopService {
         Optional<Laptop> optionalLaptop = laptopRepository.findById(id);
         return optionalLaptop.orElse(null);
     }
+    /**
+     * Recommend laptops based on user preferences.
+     * @param brand Preferred brand (e.g., MacBook, Dell, Lenovo)
+     * @param usageType Preferred usage (e.g., gaming, productivity, graphic design, casual browsing)
+     * @param minBudget Minimum price
+     * @param maxBudget Maximum price
+     * @param portability Lightweight or long battery life
+     * @param performanceRequirements Heavy tasks (e.g., gaming, video editing) or light tasks
+     * @param screenSize Preferred screen size (e.g., 13", 15", 17")
+     * @param minStorage Minimum storage in GB
+     * @param minRAM Minimum RAM in GB
+     * @return A list of recommended laptops based on the criteria.
+     */
+    public List<Laptop> recommendLaptops(String brand, String usageType, Double minBudget, Double maxBudget,
+                                         String portability, String performanceRequirements, Integer screenSize,
+                                         Integer minStorage, Integer minRAM) {
 
+        List<Laptop> laptops = laptopRepository.findAll();
+        List<Laptop> recommendedLaptops = new ArrayList<>();
+
+        // Filter laptops based on user input criteria
+        for (Laptop laptop : laptops) {
+            boolean matches = true;
+
+            // Check if brand matches
+            if (brand != null && !brand.isEmpty() && !laptop.getProductName().toLowerCase().contains(brand.toLowerCase())) {
+                matches = false;
+            }
+
+            // Check if usage type matches
+            if (usageType != null && !usageType.isEmpty() && !laptop.getDisplay().toLowerCase().contains(usageType.toLowerCase())) {
+                matches = false;
+            }
+
+            // Check if the price is within the budget
+            if (laptop.getPrice() < minBudget || laptop.getPrice() > maxBudget) {
+                matches = false;
+            }
+
+            // Check if portability needs are met (lightweight or battery life)
+            if (portability != null && !portability.isEmpty()) {
+                // Check if laptop is lightweight (assuming weight attribute is added in model)
+                // Check if battery life is long (assuming batteryLife attribute is added in model)
+                // If you don't have these attributes, you'll need to either add them or refine the check
+            }
+
+            // Check performance requirements (heavy tasks or light tasks)
+            if (performanceRequirements != null && !performanceRequirements.isEmpty()) {
+                if ("heavy".equalsIgnoreCase(performanceRequirements) &&
+                        (laptop.getProcessor().contains("i3") || parseMemory(laptop.getMemory()) < 8 || laptop.getGraphics().contains("integrated"))) {
+                    matches = false;
+                }
+                if ("light".equalsIgnoreCase(performanceRequirements) && laptop.getProcessor().contains("i5") && parseMemory(laptop.getMemory()) >= 8) {
+                    matches = false;
+                }
+            }
+
+            // Check if screen size matches
+            if (screenSize != null && screenSize > 0 && !laptop.getDisplay().contains(String.valueOf(screenSize))) {
+                matches = false;
+            }
+
+            // Check if storage and RAM are sufficient
+            if (parseStorage(laptop.getStorage()) < minStorage || parseMemory(laptop.getMemory()) < minRAM) {
+                matches = false;
+            }
+
+            // If all conditions are met, add the laptop to the recommended list
+            if (matches) {
+                recommendedLaptops.add(laptop);
+            }
+        }
+
+        return recommendedLaptops;
+    }
+
+    /**
+     * Helper method to parse memory size from a string (e.g., "8GB" to 8).
+     * @param memory The memory string (e.g., "8GB", "16GB").
+     * @return The parsed memory value in GB as an integer.
+     */
+    private int parseMemory(String memory) {
+        try {
+            return Integer.parseInt(memory.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException e) {
+            return 0; // Default to 0 if parsing fails
+        }
+    }
+
+    /**
+     * Helper method to parse storage size from a string (e.g., "512GB" to 512).
+     * @param storage The storage string (e.g., "512GB", "1TB").
+     * @return The parsed storage value in GB as an integer.
+     */
+    private int parseStorage(String storage) {
+        try {
+            if (storage.contains("TB")) {
+                return Integer.parseInt(storage.replaceAll("[^0-9]", "")) * 1024; // Convert TB to GB
+            } else {
+                return Integer.parseInt(storage.replaceAll("[^0-9]", ""));
+            }
+        } catch (NumberFormatException e) {
+            return 0; // Default to 0 if parsing fails
+        }
+    }
 
     public Laptop addLaptop(Laptop laptop) {
         return laptopRepository.save(laptop);

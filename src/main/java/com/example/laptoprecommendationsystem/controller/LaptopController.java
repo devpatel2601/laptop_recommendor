@@ -15,7 +15,34 @@ public class LaptopController {
 
     @Autowired
     private LaptopService laptopService;
+    /**
+     * Get recommended laptops based on user input preferences.
+     * @param brand Preferred brand (e.g., MacBook, Dell, Lenovo)
+     * @param usageType Preferred usage (e.g., gaming, productivity, graphic design, casual browsing)
+     * @param minBudget Minimum price
+     * @param maxBudget Maximum price
+     * @param portability Lightweight or long battery life
+     * @param performanceRequirements Heavy tasks (e.g., gaming, video editing) or light tasks
+     * @param screenSize Preferred screen size (e.g., 13", 15", 17")
+     * @param minStorage Minimum storage in GB
+     * @param minRAM Minimum RAM in GB
+     * @return A list of recommended laptops based on the criteria.
+     */
+    @GetMapping("/recommend")
+    public List<Laptop> recommendLaptops(
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String usageType,
+            @RequestParam(required = false) Double minBudget,
+            @RequestParam(required = false) Double maxBudget,
+            @RequestParam(required = false) String portability,
+            @RequestParam(required = false) String performanceRequirements,
+            @RequestParam(required = false) Integer screenSize,
+            @RequestParam(required = false) Integer minStorage,
+            @RequestParam(required = false) Integer minRAM) {
 
+        return laptopService.recommendLaptops(brand, usageType, minBudget, maxBudget, portability,
+                performanceRequirements, screenSize, minStorage, minRAM);
+    }
     /**
      * Retrieve all laptops with optional sorting.
      * @param sortBy The field to sort by (e.g., "price", "memory", "processor").
