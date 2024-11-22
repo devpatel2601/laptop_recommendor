@@ -8,7 +8,7 @@ public class Laptop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String brandName;
     private String productName;
     private double price;
         @Column(name = "Image", length = 1000)
@@ -19,6 +19,14 @@ public class Laptop {
     private String display;
     private String memory;
     private String storage;
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
 
     public Long getId() {
         return id;

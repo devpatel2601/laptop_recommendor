@@ -32,17 +32,17 @@ public class LaptopController {
     @GetMapping("/recommend")
     public List<Laptop> recommendLaptops(
             @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String usageType,
+
             @RequestParam(required = false) Double minBudget,
             @RequestParam(required = false) Double maxBudget,
-            @RequestParam(required = false) String portability,
-            @RequestParam(required = false) String performanceRequirements,
+
             @RequestParam(required = false) Integer screenSize,
             @RequestParam(required = false) Integer minStorage,
-            @RequestParam(required = false) Integer minRAM) {
+            @RequestParam(required = false) Integer minRAM,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize){
 
-        return laptopService.recommendLaptops(brand, usageType, minBudget, maxBudget, portability,
-                performanceRequirements, screenSize, minStorage, minRAM);
+        return laptopService.recommendLaptops(brand, minBudget, maxBudget, screenSize, minStorage, minRAM,page, pageSize);
     }
     /**
      * Retrieve all laptops with optional sorting.

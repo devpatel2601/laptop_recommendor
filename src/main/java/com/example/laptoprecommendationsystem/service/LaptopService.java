@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -55,58 +54,38 @@ public class LaptopService {
     /**
      * Recommend laptops based on user preferences.
      * @param brand Preferred brand (e.g., MacBook, Dell, Lenovo)
-     * @param usageType Preferred usage (e.g., gaming, productivity, graphic design, casual browsing)
+
      * @param minBudget Minimum price
      * @param maxBudget Maximum price
-     * @param portability Lightweight or long battery life
-     * @param performanceRequirements Heavy tasks (e.g., gaming, video editing) or light tasks
+
      * @param screenSize Preferred screen size (e.g., 13", 15", 17")
      * @param minStorage Minimum storage in GB
      * @param minRAM Minimum RAM in GB
      * @return A list of recommended laptops based on the criteria.
      */
-    public List<Laptop> recommendLaptops(String brand, String usageType, Double minBudget, Double maxBudget,
-                                         String portability, String performanceRequirements, Integer screenSize,
-                                         Integer minStorage, Integer minRAM) {
+    public List<Laptop> recommendLaptops(String brand, Double minBudget, Double maxBudget,
+                                         Integer screenSize, Integer minStorage, Integer minRAM,
+                                         int page, int pageSize) {
+
+        // Create a Pageable object using the page number and page size
+        Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Laptop> laptops = laptopRepository.findAll();
-        List<Laptop> recommendedLaptops = new ArrayList<>();
+        List<Laptop> filteredLaptops = new ArrayList<>();
 
         // Filter laptops based on user input criteria
         for (Laptop laptop : laptops) {
             boolean matches = true;
 
             // Check if brand matches
-            if (brand != null && !brand.isEmpty() && !laptop.getProductName().toLowerCase().contains(brand.toLowerCase())) {
-                matches = false;
-            }
-
-            // Check if usage type matches
-            if (usageType != null && !usageType.isEmpty() && !laptop.getDisplay().toLowerCase().contains(usageType.toLowerCase())) {
+            if (brand != null && !brand.isEmpty() && !laptop.getBrandName().toLowerCase().contains(brand.toLowerCase())) {
                 matches = false;
             }
 
             // Check if the price is within the budget
-            if (laptop.getPrice() < minBudget || laptop.getPrice() > maxBudget) {
+            if ((minBudget != null && laptop.getPrice() < minBudget) ||
+                    (maxBudget != null && laptop.getPrice() > maxBudget)) {
                 matches = false;
-            }
-
-            // Check if portability needs are met (lightweight or battery life)
-            if (portability != null && !portability.isEmpty()) {
-                // Check if laptop is lightweight (assuming weight attribute is added in model)
-                // Check if battery life is long (assuming batteryLife attribute is added in model)
-                // If you don't have these attributes, you'll need to either add them or refine the check
-            }
-
-            // Check performance requirements (heavy tasks or light tasks)
-            if (performanceRequirements != null && !performanceRequirements.isEmpty()) {
-                if ("heavy".equalsIgnoreCase(performanceRequirements) &&
-                        (laptop.getProcessor().contains("i3") || parseMemory(laptop.getMemory()) < 8 || laptop.getGraphics().contains("integrated"))) {
-                    matches = false;
-                }
-                if ("light".equalsIgnoreCase(performanceRequirements) && laptop.getProcessor().contains("i5") && parseMemory(laptop.getMemory()) >= 8) {
-                    matches = false;
-                }
             }
 
             // Check if screen size matches
@@ -114,18 +93,28 @@ public class LaptopService {
                 matches = false;
             }
 
-            // Check if storage and RAM are sufficient
-            if (parseStorage(laptop.getStorage()) < minStorage || parseMemory(laptop.getMemory()) < minRAM) {
+            // Check if storage is sufficient
+            if (minStorage != null && parseStorage(laptop.getStorage()) < minStorage) {
                 matches = false;
             }
 
-            // If all conditions are met, add the laptop to the recommended list
+            // Check if RAM is sufficient
+            if (minRAM != null && parseMemory(laptop.getMemory()) < minRAM) {
+                matches = false;
+            }
+
+            // If all conditions are met, add the laptop to the filtered list
             if (matches) {
-                recommendedLaptops.add(laptop);
+                filteredLaptops.add(laptop);
             }
         }
 
-        return recommendedLaptops;
+        // Calculate the start and end indices for pagination
+        int start = Math.min((int) pageable.getOffset(), filteredLaptops.size());
+        int end = Math.min((start + pageable.getPageSize()), filteredLaptops.size());
+
+        // Return the sublist representing the current page
+        return filteredLaptops.subList(start, end);
     }
 
 

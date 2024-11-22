@@ -52,22 +52,23 @@ public class ExcelDataLoaderService {
 
                 // Read the cells from the current row
                 Laptop laptop = new Laptop();
-                laptop.setProductName(getCellValueAsString(row.getCell(0))); // Column "Product name"
+                laptop.setBrandName(getCellValueAsString(row.getCell(0))); // Column "Product name"
+                laptop.setProductName(getCellValueAsString(row.getCell(1))); // Column "Product name"
 
                 // Clean price and handle non-digit characters
-                Double price = cleanAndParsePrice(row.getCell(1));
+                Double price = cleanAndParsePrice(row.getCell(2));
                 if (price == null) {
                     price = 0.0; // Default to 0 if price is not available
                 }
                 laptop.setPrice(price);
 
-                laptop.setImage(getCellValueAsString(row.getCell(2)));      // Column "image"
-                laptop.setOs(getCellValueAsString(row.getCell(3)));         // Column "OS"
-                laptop.setProcessor(getCellValueAsString(row.getCell(4)));  // Column "Processor"
-                laptop.setGraphics(getCellValueAsString(row.getCell(5)));   // Column "Graphics"
-                laptop.setDisplay(getCellValueAsString(row.getCell(6)));    // Column "display"
-                laptop.setMemory(getCellValueAsString(row.getCell(7)));     // Column "memory"
-                laptop.setStorage(getCellValueAsString(row.getCell(8)));    // Column "storage"
+                laptop.setImage(getCellValueAsString(row.getCell(3)));      // Column "image"
+                laptop.setOs(getCellValueAsString(row.getCell(4)));         // Column "OS"
+                laptop.setProcessor(getCellValueAsString(row.getCell(5)));  // Column "Processor"
+                laptop.setGraphics(getCellValueAsString(row.getCell(6)));   // Column "Graphics"
+                laptop.setDisplay(getCellValueAsString(row.getCell(7)));    // Column "display"
+                laptop.setMemory(getCellValueAsString(row.getCell(8)));     // Column "memory"
+                laptop.setStorage(getCellValueAsString(row.getCell(9)));    // Column "storage"
 
                 // Save the laptop object to the database
                 laptopRepository.save(laptop);
