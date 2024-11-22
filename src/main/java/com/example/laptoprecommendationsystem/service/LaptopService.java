@@ -4,10 +4,7 @@ import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.repository.LaptopRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -63,60 +60,64 @@ public class LaptopService {
      * @param minRAM Minimum RAM in GB
      * @return A list of recommended laptops based on the criteria.
      */
-    public List<Laptop> recommendLaptops(String brand, Double minBudget, Double maxBudget,
-                                         Integer screenSize, Integer minStorage, Integer minRAM,
-                                         int page, int pageSize) {
-
-        // Create a Pageable object using the page number and page size
-        Pageable pageable = PageRequest.of(page, pageSize);
-
-        List<Laptop> laptops = laptopRepository.findAll();
+    // Method to filter laptops based on given criteria
+    private List<Laptop> applyFilters(String brand, Double minBudget, Double maxBudget, Integer screenSize, Integer minStorage, Integer minRAM) {
+        // Get all laptops from the database
+        List<Laptop> allLaptops = laptopRepository.findAll();
         List<Laptop> filteredLaptops = new ArrayList<>();
 
-        // Filter laptops based on user input criteria
-        for (Laptop laptop : laptops) {
+        // Iterate over each laptop and check if it matches the filters
+        for (Laptop laptop : allLaptops) {
             boolean matches = true;
 
-            // Check if brand matches
-            if (brand != null && !brand.isEmpty() && !laptop.getBrandName().toLowerCase().contains(brand.toLowerCase())) {
+            // Check brand
+            if (brand != null && !brand.isEmpty() && !laptop.getProductName().toLowerCase().contains(brand.toLowerCase())) {
                 matches = false;
             }
 
-            // Check if the price is within the budget
+            // Check minimum and maximum budget
             if ((minBudget != null && laptop.getPrice() < minBudget) ||
                     (maxBudget != null && laptop.getPrice() > maxBudget)) {
                 matches = false;
             }
 
-            // Check if screen size matches
+            // Check screen size
             if (screenSize != null && screenSize > 0 && !laptop.getDisplay().contains(String.valueOf(screenSize))) {
                 matches = false;
             }
 
-            // Check if storage is sufficient
+            // Check minimum storage
             if (minStorage != null && parseStorage(laptop.getStorage()) < minStorage) {
                 matches = false;
             }
 
-            // Check if RAM is sufficient
+            // Check minimum RAM
             if (minRAM != null && parseMemory(laptop.getMemory()) < minRAM) {
                 matches = false;
             }
 
-            // If all conditions are met, add the laptop to the filtered list
+            // If all conditions are met, add to the filtered list
             if (matches) {
                 filteredLaptops.add(laptop);
             }
         }
 
-        // Calculate the start and end indices for pagination
-        int start = Math.min((int) pageable.getOffset(), filteredLaptops.size());
-        int end = Math.min((start + pageable.getPageSize()), filteredLaptops.size());
-
-        // Return the sublist representing the current page
-        return filteredLaptops.subList(start, end);
+        return filteredLaptops;
     }
 
+
+
+    // Method to get filtered laptops with pagination
+    public Page<Laptop> getRecommendedLaptops(String brand, Double minBudget, Double maxBudget, Integer screenSize, Integer minStorage, Integer minRAM, Pageable pageable) {
+        List<Laptop> filteredLaptops = applyFilters(brand, minBudget, maxBudget, screenSize, minStorage, minRAM);
+
+        // Convert the filtered list to a pageable format
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredLaptops.size());
+        List<Laptop> paginatedLaptops = filteredLaptops.subList(start, end);
+
+        return new PageImpl<>(paginatedLaptops, pageable, filteredLaptops.size());
+    }
 
     /**
      * Helper method to get the cell value as a String.
