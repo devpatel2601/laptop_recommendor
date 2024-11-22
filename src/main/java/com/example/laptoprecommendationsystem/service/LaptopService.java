@@ -71,7 +71,7 @@ public class LaptopService {
             boolean matches = true;
 
             // Check brand
-            if (brand != null && !brand.isEmpty() && !laptop.getProductName().toLowerCase().contains(brand.toLowerCase())) {
+            if (brand != null && !brand.isEmpty() && !laptop.getBrandName().toLowerCase().contains(brand.toLowerCase())) {
                 matches = false;
             }
 

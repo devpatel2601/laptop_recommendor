@@ -18,7 +18,7 @@ public class VocabularyController {
     // Endpoint for product name vocabulary
     @GetMapping("/buildProductNameVocabulary")
     public Map<String, Integer> getProductNameVocabulary() {
-        String inputFilePath = "D:/ACC/Assignments/products.csv";  // Path to your CSV file
+        String inputFilePath = "src/main/resources/products.csv";
         // Step 1: Generate product name vocabulary
         Map<String, Integer> vocabulary = vocabularyBuilderService.createProductNameVocabulary(inputFilePath);
 
@@ -33,7 +33,7 @@ public class VocabularyController {
     // Endpoint for all word vocabulary
     @GetMapping("/buildWordVocabulary")
     public Map<String, Integer> getWordVocabulary() {
-        String inputFilePath = "D:/ACC/Assignments/products-Excel.xlsx";  // Path to your Excel file
+        String inputFilePath = "src/main/resources/products-Excel.xlsx";
         // Step 2: Generate word vocabulary from entire Excel
         Map<String, Integer> vocabulary = vocabularyBuilderService.createWordVocabularyFromExcel(inputFilePath);
 
