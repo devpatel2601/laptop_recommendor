@@ -4,6 +4,8 @@ import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.service.LaptopService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,19 +32,19 @@ public class LaptopController {
      * @return A list of recommended laptops based on the criteria.
      */
     @GetMapping("/recommend")
-    public List<Laptop> recommendLaptops(
+    public Page<Laptop> getRecommendedLaptops(
             @RequestParam(required = false) String brand,
-
-            @RequestParam(required = false) Double minBudget,
-            @RequestParam(required = false) Double maxBudget,
-
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer screenSize,
-            @RequestParam(required = false) Integer minStorage,
-            @RequestParam(required = false) Integer minRAM,
+            @RequestParam(required = false) Integer storage,
+            @RequestParam(required = false) Integer ram,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize){
+            @RequestParam(defaultValue = "20") int size) {
 
-        return laptopService.recommendLaptops(brand, minBudget, maxBudget, screenSize, minStorage, minRAM,page, pageSize);
+        Pageable pageable = PageRequest.of(page, size);
+
+        return laptopService.getRecommendedLaptops(brand, minPrice, maxPrice, screenSize, storage, ram, pageable);
     }
     /**
      * Retrieve all laptops with optional sorting.
