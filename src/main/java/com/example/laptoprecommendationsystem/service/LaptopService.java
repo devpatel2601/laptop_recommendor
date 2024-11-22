@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class LaptopService {
@@ -150,11 +152,21 @@ public class LaptopService {
      */
     private int parseMemory(String memory) {
         try {
-            return Integer.parseInt(memory.replaceAll("[^0-9]", ""));
+            // Use a regular expression to find the first numeric value in the string
+            Pattern pattern = Pattern.compile("\\d+");
+            Matcher matcher = pattern.matcher(memory);
+
+            // If a number is found, return it as an integer
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group());
+            }
         } catch (NumberFormatException e) {
-            return 0; // Default to 0 if parsing fails
+            // Return 0 if parsing fails
         }
+
+        return 0; // Default to 0 if no numeric value is found
     }
+
 
     /**
      * Helper method to parse storage size from a string (e.g., "512GB" to 512).
