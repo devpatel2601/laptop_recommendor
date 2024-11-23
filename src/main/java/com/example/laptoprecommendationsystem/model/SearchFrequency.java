@@ -1,9 +1,7 @@
 package com.example.laptoprecommendationsystem.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 
 @Entity
 public class SearchFrequency {
@@ -12,19 +10,34 @@ public class SearchFrequency {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String query;
+    @Column(nullable = false, unique = true)
+    private String searchTerm;
 
-    // Constructor, Getters, Setters
+    @Column(nullable = false)
+    private int searchCount;
 
-    public SearchFrequency(String query) {
-        this.query = query;
+    // Getters and Setters
+    public Long getId() {
+        return id;
     }
 
-    public String getQuery() {
-        return query;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setQuery(String query) {
-        this.query = query;
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+    }
+
+    public int getSearchCount() {
+        return searchCount;
+    }
+
+    public void setSearchCount(int searchCount) {
+        this.searchCount = searchCount;
     }
 }
