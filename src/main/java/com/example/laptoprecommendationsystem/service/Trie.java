@@ -58,11 +58,7 @@ public class Trie {
             }
         }
     }
-    public List<String> getAllWords() {
-        List<String> words = new ArrayList<>();
-        collectWords(root, "", words);
-        return words;
-    }
+
     // Method to search for words with a specific prefix
     public List<String> searchByPrefix(String prefix) {
         TrieNode current = root;
@@ -75,6 +71,11 @@ public class Trie {
         }
         List<String> words = new ArrayList<>();
         collectWords(current, prefix, words);
+        return words;
+    }
+    public List<String> getAllWords() {
+        List<String> words = new ArrayList<>();
+        collectWords(root, "", words); // Use the existing collectWords method
         return words;
     }
 }

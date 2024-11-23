@@ -21,6 +21,7 @@ public class VocabularyBuilderService {
     public void loadVocabularyFromFile() {
         loadVocabularyFromFile("product_name_vocabulary.txt", productNameVocabulary);
 
+
         // Load words into the Trie for spell check suggestions
         for (String word : productNameVocabulary) {
             trie.insert(word);
