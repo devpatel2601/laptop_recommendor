@@ -2,6 +2,7 @@ package com.example.laptoprecommendationsystem.service;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class VocabularyBuilderService {
+public class VocabularyService {
 
     private Trie trie = new Trie();
     private Set<String> productNameVocabulary = new HashSet<>();
@@ -30,7 +31,32 @@ public class VocabularyBuilderService {
             trie.insert(word);
         }
     }
+    @Autowired
+    private EditDistanceService editDistanceService;
 
+    // Method to read available laptops from vocabulary.txt
+    private List<String> loadAvailableLaptopsFromFile(String filePath) {
+        List<String> availableLaptops = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Trim any extra spaces and add the laptop name to the list
+                availableLaptops.add(line.trim());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return availableLaptops;
+    }
+
+    // Example method for searching and suggesting closest match using edit distance
+    public String searchAndSuggestClosestMatch(String searchTerm, String filePath) {
+        // Load available laptops from vocabulary.txt
+        List<String> availableLaptops = loadAvailableLaptopsFromFile(filePath);
+
+        // Use EditDistanceService to find the closest match
+        return editDistanceService.findClosestWordMatch(availableLaptops, searchTerm);
+    }
     // Helper method to read words from a file and add them to the set
     private void loadVocabularyFromFile(String filePath, Set<String> vocabularySet) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -61,28 +87,27 @@ public class VocabularyBuilderService {
         return matchingWords;
     }
 
-    // Method to create word frequency of product names as a single word
-    public Map<String, Integer> createProductNameVocabulary(String filePath) {
-        Map<String, Integer> productFrequency = new HashMap<>();
+    // Method to create product name vocabulary (unique product names)
+    public Set<String> createProductNameVocabulary(String filePath) {
+        Set<String> productNames = new HashSet<>(); // Use a Set to store unique product names
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
 
             while ((line = br.readLine()) != null) {
                 String[] columns = line.split(",");
-                String productName = columns[0].trim().toLowerCase();
-                productFrequency.put(productName, productFrequency.getOrDefault(productName, 0) + 1);
+                String productName = columns[0].trim().toLowerCase(); // Assuming the product name is in the first column
+                productNames.add(productName); // Add the product name to the set
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return productFrequency;
+        return productNames;
     }
 
-    // Method to create a vocabulary from every word in the excel file
-    public Map<String, Integer> createWordVocabularyFromExcel(String filePath) {
-        Map<String, Integer> wordFrequency = new HashMap<>();
+    public Set<String> createWordVocabularyFromExcel(String filePath) {
+        Set<String> wordVocabulary = new HashSet<>();  // Use Set to store unique words
         Pattern pattern = Pattern.compile("\\b\\w+\\b");
 
         try (FileInputStream fis = new FileInputStream(filePath)) {
@@ -98,7 +123,7 @@ public class VocabularyBuilderService {
 
                         while (matcher.find()) {
                             String word = matcher.group();
-                            wordFrequency.put(word, wordFrequency.getOrDefault(word, 0) + 1);
+                            wordVocabulary.add(word);  // Add each word to the Set (duplicates are ignored)
                         }
                     }
                 }
@@ -108,7 +133,7 @@ public class VocabularyBuilderService {
             e.printStackTrace();
         }
 
-        return wordFrequency;
+        return wordVocabulary;
     }
 
     // Helper method to get the cell value as a String
@@ -129,11 +154,11 @@ public class VocabularyBuilderService {
     }
 
     // Method to save vocabulary to a file
-    public void saveVocabularyToFile(Map<String, Integer> vocabulary, String outputFilePath) {
+    public void saveVocabularyToFile(Set<String> vocabulary, String outputFilePath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
-            for (Map.Entry<String, Integer> entry : vocabulary.entrySet()) {
-                writer.write(entry.getKey() + ": " + entry.getValue());
-                writer.newLine();
+            for (String word : vocabulary) {
+                writer.write(word); // Just write the word (product name)
+                writer.newLine(); // New line after each word
             }
             System.out.println("Vocabulary saved to " + outputFilePath);
         } catch (IOException e) {
@@ -141,15 +166,6 @@ public class VocabularyBuilderService {
         }
     }
 
-    // Endpoint for generating and retrieving the word vocabulary
-    @GetMapping("/buildWordVocabulary")
-    public Map<String, Integer> getWordVocabulary() {
-        String inputFilePath = "src/main/resources/products-Excel.xlsx";
-        Map<String, Integer> vocabulary = createWordVocabularyFromExcel(inputFilePath);
 
-        String outputFilePath = "word_vocabulary.txt";
-        saveVocabularyToFile(vocabulary, outputFilePath);
 
-        return vocabulary;
-    }
 }

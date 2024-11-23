@@ -1,6 +1,6 @@
 package com.example.laptoprecommendationsystem.controller;
 
-import com.example.laptoprecommendationsystem.service.VocabularyBuilderService;
+import com.example.laptoprecommendationsystem.service.VocabularyService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +16,7 @@ import java.util.Set;
 public class VocabularyController {
 
     @Autowired
-    private VocabularyBuilderService vocabularyBuilderService;
+    private VocabularyService vocabularyBuilderService;
 
     // This method is called when the Spring Boot application starts
     @PostConstruct
@@ -30,29 +30,28 @@ public class VocabularyController {
         return vocabularyBuilderService.getWordsContaining(word);
     }
 
-    // Endpoint for generating and retrieving the product name vocabulary
     @GetMapping("/buildProductNameVocabulary")
-    public Map<String, Integer> getProductNameVocabulary() {
-        String inputFilePath = "src/main/resources/products.csv";
-        Map<String, Integer> vocabulary = vocabularyBuilderService.createProductNameVocabulary(inputFilePath);
+    public Set<String> getProductNameVocabulary() {
+        String inputFilePath = "src/main/resources/products.csv"; // Your file path
+        Set<String> productNames = vocabularyBuilderService.createProductNameVocabulary(inputFilePath);
 
-        // Optionally, save the vocabulary to a file
-        String outputFilePath = "product_name_vocabulary.txt";
-        vocabularyBuilderService.saveVocabularyToFile(vocabulary, outputFilePath);
+        // Optionally, save the vocabulary to a file (if required)
+        String outputFilePath = "product_names_vocabulary.txt";
+        vocabularyBuilderService.saveVocabularyToFile(productNames, outputFilePath);
 
-        return vocabulary;
+        return productNames; // Return the Set of product names
     }
 
-    // Endpoint for generating and retrieving all word vocabulary
     @GetMapping("/buildWordVocabulary")
-    public Map<String, Integer> getWordVocabulary() {
+    public Set<String> getWordVocabulary() {
         String inputFilePath = "src/main/resources/products-Excel.xlsx";
-        Map<String, Integer> vocabulary = vocabularyBuilderService.createWordVocabularyFromExcel(inputFilePath);
+        Set<String> vocabulary = vocabularyBuilderService.createWordVocabularyFromExcel(inputFilePath);
 
         // Optionally, save the vocabulary to a file
         String outputFilePath = "word_vocabulary.txt";
-        vocabularyBuilderService.saveVocabularyToFile(vocabulary, outputFilePath);
+        vocabularyBuilderService.saveVocabularyToFile(vocabulary, outputFilePath);  // Pass Set to the save method
 
         return vocabulary;
     }
+
 }
