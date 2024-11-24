@@ -21,14 +21,13 @@ public class LaptopController {
     /**
      * Get recommended laptops based on user input preferences.
      * @param brand Preferred brand (e.g., MacBook, Dell, Lenovo)
-     * @param usageType Preferred usage (e.g., gaming, productivity, graphic design, casual browsing)
-     * @param minBudget Minimum price
-     * @param maxBudget Maximum price
-     * @param portability Lightweight or long battery life
-     * @param performanceRequirements Heavy tasks (e.g., gaming, video editing) or light tasks
+     * @param ram Minimum price
+     * @param page Maximum price
+     * @param storage Lightweight or long battery life
+     * @param maxPrice Heavy tasks (e.g., gaming, video editing) or light tasks
      * @param screenSize Preferred screen size (e.g., 13", 15", 17")
-     * @param minStorage Minimum storage in GB
-     * @param minRAM Minimum RAM in GB
+     * @param minPrice Minimum storage in GB
+     * @param size Minimum RAM in GB
      * @return A list of recommended laptops based on the criteria.
      */
     @GetMapping("/recommend")
@@ -76,6 +75,14 @@ public class LaptopController {
         }
     }
 
+    // Endpoint to get search suggestions based on the query
+    @GetMapping("/suggestions")
+    public List<Laptop> getLaptopSuggestions(@RequestParam String query,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "5") int size) {
+        // Query is the search term, page is the page number, and size is the number of results per page
+        return laptopService.getSuggestions(query, page, size);
+    }
     /**
      * Add a new laptop.
      * @param laptop The laptop to be added.

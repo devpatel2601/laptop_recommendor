@@ -18,7 +18,7 @@ import java.util.Iterator;
 public class ExcelDataLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(ExcelDataLoaderService.class);
-    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel.xlsx"; // Update this path to your Excel file location
+    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel-upd.xlsx"; // Update this path to your Excel file location
 
     @Autowired
     private LaptopRepository laptopRepository;
@@ -69,6 +69,7 @@ public class ExcelDataLoaderService {
                 laptop.setDisplay(getCellValueAsString(row.getCell(7)));    // Column "display"
                 laptop.setMemory(getCellValueAsString(row.getCell(8)));     // Column "memory"
                 laptop.setStorage(getCellValueAsString(row.getCell(9)));    // Column "storage"
+                laptop.setFilepath(getCellValueAsString(row.getCell(10)));      // Column "FilePath"
 
                 // Save the laptop object to the database
                 laptopRepository.save(laptop);

@@ -19,6 +19,16 @@ public class Laptop {
     private String display;
     private String memory;
     private String storage;
+    @Column(name = "FilePath", length = 1000)
+    private String filepath;
+
+    public String getFilepath() {
+        return filepath;
+    }
+
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
 
     public String getBrandName() {
         return brandName;

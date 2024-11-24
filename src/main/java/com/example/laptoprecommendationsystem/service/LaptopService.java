@@ -143,7 +143,13 @@ public class LaptopService {
     }
 
 
+    public List<Laptop> getSuggestions(String query, int page, int size) {
+        // Create a PageRequest object for pagination
+        PageRequest pageRequest = PageRequest.of(page, size);
 
+        // Fetch suggestions based on productName
+        return laptopRepository.findByBrandNameContainingIgnoreCase(query, pageRequest);
+    }
 
     /**
      * Helper method to parse memory size from a string (e.g., "8GB" to 8).
