@@ -6,8 +6,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-
-import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +15,7 @@ public class LaptopService {
 
     @Autowired
     private LaptopRepository laptopRepository;
-    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel.xlsx";
+//    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel-upd.xlsx";
     /**
      * Get all laptops with optional sorting based on the field and order.
      * @param sortBy The field by which to sort (e.g., "price", "memory", "processor").
@@ -224,4 +222,11 @@ public class LaptopService {
     public void deleteLaptop(Long id) {
         laptopRepository.deleteById(id);
     }
+
+    // Search laptops based on a search term in brand name or product name
+    public List<Laptop> searchLaptops(String searchTerm) {
+        // Fetch laptops by product name or brand name containing the search term
+        return laptopRepository.findByProductNameContainingIgnoreCaseOrBrandNameContainingIgnoreCase(searchTerm, searchTerm);
+    }
 }
+

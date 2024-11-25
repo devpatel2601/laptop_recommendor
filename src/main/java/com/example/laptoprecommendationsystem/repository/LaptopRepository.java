@@ -18,4 +18,7 @@ public interface LaptopRepository extends JpaRepository<Laptop, Long> {
 
     // Optional: Search by brandName (case-insensitive)
     List<Laptop> findByBrandNameContainingIgnoreCase(String query, PageRequest pageRequest);
+
+    // Query to find laptops by product name or brand name containing the search term
+    List<Laptop> findByProductNameContainingIgnoreCaseOrBrandNameContainingIgnoreCase(String productName, String brandName);
 }

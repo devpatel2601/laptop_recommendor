@@ -83,6 +83,13 @@ public class LaptopController {
         // Query is the search term, page is the page number, and size is the number of results per page
         return laptopService.getSuggestions(query, page, size);
     }
+
+    // API to search laptops based on a search term
+    @GetMapping("/search")
+    public ResponseEntity<List<Laptop>> searchLaptops(@RequestParam String searchTerm) {
+        List<Laptop> laptops = laptopService.searchLaptops(searchTerm);
+        return new ResponseEntity<>(laptops, HttpStatus.OK);
+    }
     /**
      * Add a new laptop.
      * @param laptop The laptop to be added.
