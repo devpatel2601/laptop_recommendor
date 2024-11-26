@@ -22,6 +22,27 @@ public class Laptop {
     @Column(name = "FilePath", length = 1000)
     private String filepath;
 
+//    public Laptop() {
+//    }
+//    public Laptop(String s) {
+//    }
+//
+//
+//    public Laptop(Long id, String filepath, String storage, String memory, String display, String graphics, String productName, String brandName, double price, String image, String os, String processor) {
+//        this.id = id;
+//        this.filepath = filepath;
+//        this.storage = storage;
+//        this.memory = memory;
+//        this.display = display;
+//        this.graphics = graphics;
+//        this.productName = productName;
+//        this.brandName = brandName;
+//        this.price = price;
+//        this.image = image;
+//        this.os = os;
+//        this.processor = processor;
+//    }
+
     public String getFilepath() {
         return filepath;
     }
