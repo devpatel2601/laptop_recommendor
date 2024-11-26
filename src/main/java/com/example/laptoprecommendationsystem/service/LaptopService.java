@@ -109,6 +109,19 @@ public class LaptopService {
 
     // Method to get filtered laptops with pagination
     public Page<Laptop> getRecommendedLaptops(String brand, Double minBudget, Double maxBudget, Integer screenSize, Integer minStorage, Integer minRAM, Pageable pageable) {
+        // Regex pattern to match numeric values
+        Pattern numericPattern = Pattern.compile("^\\d+(\\.\\d+)?$");
+
+        // Validate that budget and RAM values are numeric
+        if ((minBudget != null && !numericPattern.matcher(minBudget.toString()).matches()) ||
+                (maxBudget != null && !numericPattern.matcher(maxBudget.toString()).matches()) ||
+                (minRAM != null && !numericPattern.matcher(minRAM.toString()).matches()) ||
+                (screenSize != null && !numericPattern.matcher(screenSize.toString()).matches())) {
+
+            throw new IllegalArgumentException("Input values for budget, RAM, and screen size must be numeric.");
+        }
+
+        // Apply filters after validation
         List<Laptop> filteredLaptops = applyFilters(brand, minBudget, maxBudget, screenSize, minStorage, minRAM);
 
         // Convert the filtered list to a pageable format

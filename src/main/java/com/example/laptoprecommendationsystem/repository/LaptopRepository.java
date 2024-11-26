@@ -14,11 +14,13 @@ public interface LaptopRepository extends JpaRepository<Laptop, Long> {
     List<Laptop> findAll(Sort sort);
 
     // Search for laptops by productName containing the query (case-insensitive)
-    List<Laptop> findByProductNameContainingIgnoreCase(String query, PageRequest pageRequest);
+    List<Laptop> findByProductNameContainingIgnoreCase(String query);
 
     // Optional: Search by brandName (case-insensitive)
     List<Laptop> findByBrandNameContainingIgnoreCase(String query, PageRequest pageRequest);
 
     // Query to find laptops by product name or brand name containing the search term
     List<Laptop> findByProductNameContainingIgnoreCaseOrBrandNameContainingIgnoreCase(String productName, String brandName);
+
+
 }

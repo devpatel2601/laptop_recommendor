@@ -1,5 +1,7 @@
 package com.example.laptoprecommendationsystem.service;
 
+import com.example.laptoprecommendationsystem.model.Laptop;
+import com.example.laptoprecommendationsystem.repository.LaptopRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,31 +34,26 @@ public class VocabularyService {
         }
     }
     @Autowired
+    private LaptopRepository laptopRepository;
+    @Autowired
     private EditDistanceService editDistanceService;
+    public List<Laptop> searchAndSuggestClosestMatches(String searchTerm) {
+        int maxEditDistance = 3;  // Set based on your logic
 
-    // Method to read available laptops from vocabulary.txt
-    private List<String> loadAvailableLaptopsFromFile(String filePath) {
-        List<String> availableLaptops = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Trim any extra spaces and add the laptop name to the list
-                availableLaptops.add(line.trim());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Fetch laptops from the database
+        List<Laptop> laptops = laptopRepository.findByProductNameContainingIgnoreCase(searchTerm);
+
+        // If no exact matches, use edit distance to suggest close matches
+        if (laptops.isEmpty()) {
+            laptops = editDistanceService.findMatches(laptopRepository.findAll(), searchTerm, 4);
         }
-        return availableLaptops;
+
+        return laptops;
     }
 
-    // Example method for searching and suggesting closest match using edit distance
-    public String searchAndSuggestClosestMatch(String searchTerm, String filePath) {
-        // Load available laptops from vocabulary.txt
-        List<String> availableLaptops = loadAvailableLaptopsFromFile(filePath);
 
-        // Use EditDistanceService to find the closest match
-        return editDistanceService.findClosestWordMatch(availableLaptops, searchTerm);
-    }
+
+
     // Helper method to read words from a file and add them to the set
     private void loadVocabularyFromFile(String filePath, Set<String> vocabularySet) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {

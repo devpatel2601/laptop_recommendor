@@ -18,7 +18,7 @@ import java.util.Iterator;
 public class ExcelDataLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(ExcelDataLoaderService.class);
-    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel-upd.xlsx"; // Update this path to your Excel file location
+    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel.xlsx"; // Update this path to your Excel file location
 
     @Autowired
     private LaptopRepository laptopRepository;
