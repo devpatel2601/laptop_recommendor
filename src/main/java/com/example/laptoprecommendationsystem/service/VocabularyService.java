@@ -37,15 +37,22 @@ public class VocabularyService {
     private LaptopRepository laptopRepository;
     @Autowired
     private EditDistanceService editDistanceService;
+
+    int determineMaxEditDistance(String searchTerm) {
+        int length = searchTerm.length();
+        if (length <= 2) return 3; // Higher threshold for very short terms
+        if (length <= 4) return 2; // Moderate threshold
+        return 1; // Strict threshold for longer terms
+    }
     public List<Laptop> searchAndSuggestClosestMatches(String searchTerm) {
-        int maxEditDistance = 3;  // Set based on your logic
+          // Set based on your logic
 
         // Fetch laptops from the database
         List<Laptop> laptops = laptopRepository.findByProductNameContainingIgnoreCase(searchTerm);
 
         // If no exact matches, use edit distance to suggest close matches
         if (laptops.isEmpty()) {
-            laptops = editDistanceService.findMatches(laptopRepository.findAll(), searchTerm, 4);
+            laptops = editDistanceService.findMatches(laptopRepository.findAll(), searchTerm, 3 );
         }
 
         return laptops;
@@ -162,7 +169,4 @@ public class VocabularyService {
             e.printStackTrace();
         }
     }
-
-
-
 }
