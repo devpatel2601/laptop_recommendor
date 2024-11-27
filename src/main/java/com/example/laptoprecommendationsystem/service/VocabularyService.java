@@ -45,7 +45,7 @@ public class VocabularyService {
 
         // If no exact matches, use edit distance to suggest close matches
         if (laptops.isEmpty()) {
-            laptops = editDistanceService.findMatches(laptopRepository.findAll(), searchTerm, 4);
+            laptops = editDistanceService.findMatches(laptopRepository.findAll(), searchTerm, 3);
         }
 
         return laptops;
