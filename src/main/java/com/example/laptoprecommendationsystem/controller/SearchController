@@ -1,0 +1,107 @@
+//package com.example.laptoprecommendationsystem.controller;
+//
+//import com.example.laptoprecommendationsystem.model.Laptop;
+//import com.example.laptoprecommendationsystem.service.VocabularyService;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.RestController;
+//
+//import java.util.List;
+//
+//@RestController
+//public class SearchController {
+//
+//    @Autowired
+//    private VocabularyService vocabularyService;
+//
+//    // Endpoint to handle user search and suggest closest match using vocabulary.txt
+//    @GetMapping("/searchLaptop")
+//    public List<Laptop> searchLaptop(@RequestParam String searchTerm) {
+//        // Define the path to vocabulary.txt
+//        String vocabularyFilePath = "src/main/resources/vocabulary.txt";
+//
+//        // Adjust the max edit distance as needed
+//        int maxEditDistance = 3;
+//
+//        // Fetch the closest matches as full Laptop objects
+//        return vocabularyService.searchAndSuggestClosestMatches(searchTerm);
+//    }
+//
+//}
+
+package com.example.laptoprecommendationsystem.controller;
+
+import com.example.laptoprecommendationsystem.model.Laptop;
+import com.example.laptoprecommendationsystem.service.LaptopService;
+import com.example.laptoprecommendationsystem.service.PageRankingService;
+import com.example.laptoprecommendationsystem.service.InvertedIndexService;
+import com.example.laptoprecommendationsystem.service.VocabularyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class SearchController {
+
+    @Autowired
+    private VocabularyService vocabularyService;
+
+    @Autowired
+    private LaptopService laptopService;
+
+    @Autowired
+    private InvertedIndexService invertedIndexService;  // Inject InvertedIndexService for inverted indexing
+
+    @Autowired
+    private PageRankingService pageRankingService;  // Inject PageRankingService for ranking laptops
+
+    // Endpoint to handle user search and suggest closest match using vocabulary.txt
+    @GetMapping("/searchLaptop")
+    public List<Laptop> searchLaptop(@RequestParam String searchTerm) {
+        // Fetch all laptops (or a subset, based on your requirements)
+        List<Laptop> laptops = laptopService.getAllLaptops("price", "asc");
+
+        // Step 1: Build the inverted index using the laptops data (only productName and brandName)
+        buildInvertedIndex(laptops);
+
+        // Step 2: Search for laptops using the Inverted Index
+        List<Integer> matchingIndexes = invertedIndexService.searchByPrefix(searchTerm.toLowerCase());
+
+        // Step 3: Filter laptops based on matching indexes from the inverted index
+        List<Laptop> matchingLaptops = filterLaptopsByIndexes(laptops, matchingIndexes);
+
+        // Step 4: Rank the filtered laptops based on the frequency of the search term
+        List<Laptop> rankedLaptops = pageRankingService.rankLaptops(matchingLaptops, searchTerm);
+
+        // Return the ranked laptops
+        return rankedLaptops;
+    }
+
+    /**
+     * Builds the inverted index by inserting words from each laptop into the Trie.
+     */
+    private void buildInvertedIndex(List<Laptop> laptops) {
+        for (int i = 0; i < laptops.size(); i++) {
+            Laptop laptop = laptops.get(i);
+            // Insert words from the product name and brand name into the Trie
+            String text = laptop.getProductName() + " " + laptop.getBrandName();
+            String[] words = text.toLowerCase().split("\\W+");  // Split text into words
+            for (String word : words) {
+                invertedIndexService.insert(word, i);  // Insert each word into the Trie
+            }
+        }
+    }
+
+    /**
+     * Filters laptops based on the matching indexes from the inverted index.
+     */
+    private List<Laptop> filterLaptopsByIndexes(List<Laptop> laptops, List<Integer> matchingIndexes) {
+        return matchingIndexes.stream()
+                .map(laptops::get)
+                .toList();
+    }
+}
