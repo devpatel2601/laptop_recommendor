@@ -51,20 +51,13 @@ public class LaptopController {
 
         return laptopService.getRecommendedLaptops(brand, minPrice, maxPrice, screenSize, storage, ram, pageable);
     }
-    /**
-     * Retrieve all laptops with optional sorting.
-     * @param sortBy The field to sort by (e.g., "price", "memory", "processor").
-     * @param order The sort order, either "asc" or "desc".
-     * @return A list of sorted laptops.
-     */
-    @GetMapping
-    public ResponseEntity<List<Laptop>> getAllLaptops(
-            @RequestParam(defaultValue = "price") String sortBy,
-            @RequestParam(defaultValue = "asc") String order) {
 
-        List<Laptop> laptops = laptopService.getAllLaptops(sortBy, order);
-        return new ResponseEntity<>(laptops, HttpStatus.OK);
+
+    @GetMapping("/sorted-by-price")
+    public List<Laptop> getLaptopsSortedByPrice(@RequestParam String order) {
+        return laptopService.getAllLaptopsSortedByPrice(order);
     }
+
 
 
 
