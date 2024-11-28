@@ -2,6 +2,7 @@ package com.example.laptoprecommendationsystem.service;
 
 import com.example.laptoprecommendationsystem.model.Laptop;
 import com.example.laptoprecommendationsystem.repository.LaptopRepository;
+import com.example.laptoprecommendationsystem.util.LaptopQuickSort;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -18,21 +19,16 @@ public class LaptopService {
 
 
 //    private static final String EXCEL_FILE_PATH = "src/main/resources/products-Excel-upd.xlsx";
-    /**
-     * Get all laptops with optional sorting based on the field and order.
-     * @param sortBy The field by which to sort (e.g., "price", "memory", "processor").
-     * @param order The order of sorting, either "asc" or "desc".
-     * @return A list of sorted laptops.
-     */
-    public List<Laptop> getAllLaptops(String sortBy, String order) {
-        // Determine the sort direction
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        // Create the Sort object using the provided sortBy field and sortDirection
-        Sort sort = Sort.by(sortDirection, sortBy);
 
-        // Fetch and return the sorted list of laptops
-        return laptopRepository.findAll(sort);
+    public List<Laptop> getAllLaptopsSortedByPrice(String order) {
+        // Fetch all laptops from the repository
+        List<Laptop> laptops = laptopRepository.findAll();
+
+        // Sort laptops by price using QuickSort
+        LaptopQuickSort.quickSortByPrice(laptops, order);
+
+        return laptops;
     }
 
     /**

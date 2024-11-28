@@ -12,36 +12,38 @@ public class Laptop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column
     private String brandName;
+    @Column
     private String productName;
+    @Column
     private double price;
-        @Column(name = "Image", length = 1000)
+    @Column(name = "Image", length = 1000)
     private String image;
+    @Column
     private String os;
+    @Column
     private String processor;
+    @Column
     private String graphics;
+    @Column
     private String display;
+    @Column
     private String memory;
+    @Column
     private String storage;
+    // Getters and setters for the existing fields
     @Column(name = "FilePath", length = 1000)
     private String filepath;
-private int frequency;
+    @Column
+    private Integer rankScore;
 
-
-    public int getFrequency() {
-        return frequency;
+    public Long getId() {
+        return id;
     }
 
-    public void setFrequency(int frequency) {
-        this.frequency = frequency;
-    }
-
-    public String getFilepath() {
-        return filepath;
-    }
-
-    public void setFilepath(String filepath) {
-        this.filepath = filepath;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getBrandName() {
@@ -50,14 +52,6 @@ private int frequency;
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getProductName() {
@@ -130,5 +124,21 @@ private int frequency;
 
     public void setStorage(String storage) {
         this.storage = storage;
+    }
+
+    public String getFilepath() {
+        return filepath;
+    }
+
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
+
+    public Integer getRankScore() {
+        return rankScore;
+    }
+
+    public void setRankScore(Integer rankScore) {
+        this.rankScore = rankScore;
     }
 }
