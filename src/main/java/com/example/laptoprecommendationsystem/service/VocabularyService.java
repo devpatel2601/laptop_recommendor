@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class VocabularyService {
@@ -80,16 +81,13 @@ public class VocabularyService {
     public Set<String> getWordsContaining(String inputWord) {
         String lowerCaseInput = inputWord.toLowerCase();
 
-        Set<String> matchingWords = new HashSet<>();
-        matchingWords.addAll(productNameVocabulary.stream()
-                .filter(word -> word.contains(lowerCaseInput))
-                .collect(Collectors.toSet()));
-        matchingWords.addAll(wordVocabulary.stream()
-                .filter(word -> word.contains(lowerCaseInput))
-                .collect(Collectors.toSet()));
-
-        return matchingWords;
+        // Combine and filter matching words from both vocabularies, removing frequencies
+        return Stream.concat(productNameVocabulary.stream(), wordVocabulary.stream())
+                .filter(word -> word.toLowerCase().contains(lowerCaseInput))
+                .map(word -> word.split(":")[0].trim()) // Remove frequency after ':' if present
+                .collect(Collectors.toSet());
     }
+
 
     // Method to create product name vocabulary (unique product names)
     public Set<String> createProductNameVocabulary(String filePath) {
