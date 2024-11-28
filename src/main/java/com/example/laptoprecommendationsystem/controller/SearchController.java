@@ -30,7 +30,7 @@ public class SearchController {
 
         // Adjust the max edit distance as needed
         int maxEditDistance = 3;
-
+        
         // Fetch the closest matches as full Laptop objects
         return vocabularyService.searchAndSuggestClosestMatches(searchTerm);
     }
