@@ -1,5 +1,6 @@
 package com.example.laptoprecommendationsystem.service;
 
+import com.example.laptoprecommendationsystem.model.Laptop;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -11,17 +12,16 @@ public class InvertedIndexService {
     private static class TrieNode {
         private final TrieNode[] children;
         private boolean isEndOfWord;
-        private final Set<Integer> laptopIndexes;  // Stores unique laptop indexes
+        private final Set<Long> laptopIds; // Stores unique laptop IDs
 
         TrieNode() {
             this.children = new TrieNode[26]; // Supports lowercase English letters
             this.isEndOfWord = false;
-            this.laptopIndexes = new HashSet<>();
+            this.laptopIds = new HashSet<>();
         }
 
-        // Adds an index to the current node
-        void addLaptopIndex(int index) {
-            laptopIndexes.add(index);
+        void addLaptopId(Long laptopId) {
+            laptopIds.add(laptopId);
         }
     }
 
@@ -32,12 +32,12 @@ public class InvertedIndexService {
     }
 
     /**
-     * Inserts a word into the Trie with its associated laptop index.
+     * Inserts a word into the Trie with its associated laptop ID.
      * @param word The word to insert.
-     * @param laptopIndex The index of the laptop where the word appears.
+     * @param laptopId The ID of the laptop where the word appears.
      */
-    public void insert(String word, int laptopIndex) {
-        if (word == null || word.isEmpty()) {
+    public void insert(String word, Long laptopId) {
+        if (word == null || word.trim().isEmpty()) {
             return; // Skip empty or null words
         }
 
@@ -56,47 +56,47 @@ public class InvertedIndexService {
         }
 
         currentNode.isEndOfWord = true;
-        currentNode.addLaptopIndex(laptopIndex);
+        currentNode.addLaptopId(laptopId);
     }
 
     /**
-     * Searches for words with a given prefix.
+     * Searches for laptops with a given prefix.
      * @param prefix The prefix to search for.
-     * @return A list of laptop indexes associated with the prefix.
+     * @return A set of laptop IDs associated with the prefix.
      */
-    public List<Integer> searchByPrefix(String prefix) {
-        if (prefix == null || prefix.isEmpty()) {
-            return Collections.emptyList(); // Return empty result for null or empty prefix
+    public Set<Long> searchByPrefix(String prefix) {
+        if (prefix == null || prefix.trim().isEmpty()) {
+            return Collections.emptySet(); // Return empty result for null or empty prefix
         }
 
         TrieNode currentNode = root;
 
         for (char character : prefix.toLowerCase().toCharArray()) {
             if (!isValidCharacter(character)) {
-                return Collections.emptyList(); // Return empty if prefix contains invalid characters
+                return Collections.emptySet(); // Return empty if prefix contains invalid characters
             }
 
             int index = character - 'a';
             if (currentNode.children[index] == null) {
-                return Collections.emptyList(); // Prefix not found
+                return Collections.emptySet(); // Prefix not found
             }
             currentNode = currentNode.children[index];
         }
 
-        return new ArrayList<>(collectLaptopIndexes(currentNode)); // Collect all matching laptop indexes
+        return collectLaptopIds(currentNode); // Collect all matching laptop IDs
     }
 
     /**
-     * Collects all laptop indexes from the given TrieNode and its descendants.
+     * Collects all laptop IDs from the given TrieNode and its descendants.
      * @param node The current TrieNode.
-     * @return A set of laptop indexes.
+     * @return A set of laptop IDs.
      */
-    private Set<Integer> collectLaptopIndexes(TrieNode node) {
-        Set<Integer> result = new HashSet<>(node.laptopIndexes);
+    private Set<Long> collectLaptopIds(TrieNode node) {
+        Set<Long> result = new HashSet<>(node.laptopIds);
 
         for (TrieNode child : node.children) {
             if (child != null) {
-                result.addAll(collectLaptopIndexes(child));
+                result.addAll(collectLaptopIds(child));
             }
         }
 
@@ -110,5 +110,25 @@ public class InvertedIndexService {
      */
     private boolean isValidCharacter(char character) {
         return character >= 'a' && character <= 'z';
+    }
+
+    /**
+     * Indexes a laptop's fields for searchability.
+     * @param laptop The Laptop object to index.
+     */
+    public void indexLaptop(Laptop laptop) {
+        if (laptop == null) return;
+
+        Long id = laptop.getId();
+
+        // Index fields such as brand name, product name, OS, etc.
+        insert(laptop.getBrandName(), id);
+        insert(laptop.getProductName(), id);
+        insert(laptop.getOs(), id);
+        insert(laptop.getProcessor(), id);
+        insert(laptop.getGraphics(), id);
+        insert(laptop.getDisplay(), id);
+        insert(laptop.getMemory(), id);
+        insert(laptop.getStorage(), id);
     }
 }

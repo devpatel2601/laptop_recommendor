@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class SearchController {
@@ -20,6 +21,12 @@ public class SearchController {
     @Autowired
     private InvertedIndexService invertedIndexService;
 
+    /**
+     * Search for laptops using edit distance logic to find the closest matches.
+     *
+     * @param searchTerm The term to search for.
+     * @return A list of laptops matching the closest edit distance.
+     */
     private static final String FILE_PATH = "src/main/resources/Products_Final.xlsx"; // Path to the file containing laptop data
 
     // Endpoint to handle user search and suggest closest match using vocabulary.txt (Edit Distance Only)
@@ -30,71 +37,83 @@ public class SearchController {
 
         // Adjust the max edit distance as needed
         int maxEditDistance = 3;
-        
+
         // Fetch the closest matches as full Laptop objects
         return vocabularyService.searchAndSuggestClosestMatches(searchTerm);
     }
 
+    /**
+     * Perform a full search, combining edit distance suggestions and inverted index search.
+     *
+     * @param searchTerm The term to search for.
+     * @return A list of lists of laptops matching the search criteria.
+     */
     @GetMapping("/fullSearch")
     public List<List<Laptop>> fullSearch(@RequestParam String searchTerm) {
-        // Step 1: Fetch laptops from vocabulary service or other data sources
+        // Step 1: Fetch laptops using edit distance logic
         List<Laptop> laptops = vocabularyService.searchAndSuggestClosestMatches(searchTerm);
 
-        // Step 2: Build the inverted index using the fetched laptops
+        // Step 2: Build the inverted index with fetched laptops
         buildInvertedIndex(laptops);
 
-        // Step 3: Search for matching indexes using the Inverted Index
-        List<Integer> matchingPageIndexes = invertedIndexService.searchByPrefix(searchTerm.toLowerCase());
+        // Step 3: Search using inverted index
+        Set<Long> matchingLaptopIds = invertedIndexService.searchByPrefix(searchTerm.toLowerCase());
 
-        // Step 4: Filter and validate laptops based on matching indexes
-        List<Laptop> matchingLaptops = filterLaptopsByIndexes(laptops, matchingPageIndexes);
+        // Step 4: Filter laptops based on matching IDs
+        List<Laptop> matchingLaptops = filterLaptopsByIds(laptops, matchingLaptopIds);
 
-        // Return the result as a list of lists of laptops
+        // Return as a list of lists (you can add more lists if needed for other results)
         List<List<Laptop>> result = new ArrayList<>();
-        result.add(matchingLaptops);  // You can add more lists if necessary
+        result.add(matchingLaptops);
         return result;
     }
 
-
-    // Endpoint for Inverted Indexing Search (Steps 1-3)
+    /**
+     * Search for laptops using only the inverted index.
+     *
+     * @param searchTerm The term to search for.
+     * @return A list of laptops matching the prefix in the inverted index.
+     */
     @GetMapping("/searchByInvertedIndex")
     public List<Laptop> searchByInvertedIndex(@RequestParam String searchTerm) {
+        // Use VocabularyService to fetch relevant laptops first
         List<Laptop> laptops = vocabularyService.searchAndSuggestClosestMatches(searchTerm);
+
+        // Build the inverted index
         buildInvertedIndex(laptops);
-        List<Integer> matchingPageIndexes = invertedIndexService.searchByPrefix(searchTerm.toLowerCase());
-        return filterLaptopsByIndexes(laptops, matchingPageIndexes);
+
+        // Perform prefix search
+        Set<Long> matchingLaptopIds = invertedIndexService.searchByPrefix(searchTerm.toLowerCase());
+
+        // Filter laptops based on the results
+        return filterLaptopsByIds(laptops, matchingLaptopIds);
     }
 
     /**
-     * Builds the inverted index by inserting words from each laptop into the Trie.
+     * Builds the inverted index by indexing each word in the laptop fields.
+     *
+     * @param laptops The list of laptops to index.
      */
     private void buildInvertedIndex(List<Laptop> laptops) {
-        for (int i = 0; i < laptops.size(); i++) {
-            Laptop laptop = laptops.get(i);
-            String text = (laptop.getProductName() + " " + laptop.getBrandName()).toLowerCase();
-            String[] words = text.split("\\W+");
-            for (String word : words) {
-                invertedIndexService.insert(word, i); // Insert words with their index
-            }
+        for (Laptop laptop : laptops) {
+            invertedIndexService.indexLaptop(laptop);
         }
     }
 
     /**
-     * Filters laptops based on the matching indexes from the inverted index.
+     * Filters laptops based on a set of matching laptop IDs.
+     *
+     * @param laptops The list of laptops to filter from.
+     * @param matchingIds The set of matching IDs from the inverted index.
+     * @return A filtered list of laptops.
      */
-    private List<Laptop> filterLaptopsByIndexes(List<Laptop> laptops, List<Integer> matchingIndexes) {
-        return matchingIndexes.stream()
-                .filter(index -> index >= 0 && index < laptops.size()) // Ensure indexes are within bounds
-                .map(laptops::get)
-                .toList();
-    }
-
-    /**
-     * Placeholder method to fetch laptops from a data source.
-     * Replace with actual logic to fetch laptops from a database or API.
-     */
-    private List<Laptop> fetchLaptops() {
-        // Replace this with actual implementation
-        return new ArrayList<>();
+    private List<Laptop> filterLaptopsByIds(List<Laptop> laptops, Set<Long> matchingIds) {
+        List<Laptop> filteredLaptops = new ArrayList<>();
+        for (Laptop laptop : laptops) {
+            if (matchingIds.contains(laptop.getId())) {
+                filteredLaptops.add(laptop);
+            }
+        }
+        return filteredLaptops;
     }
 }
