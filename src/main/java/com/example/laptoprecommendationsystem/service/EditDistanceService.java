@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 @Service
 public class EditDistanceService {
 
-    // Method to calculate the Edit Distance (Levenshtein Distance)
     // Function to calculate the Edit Distance between two words
     public static int calculateEditDistance(String word1, String word2) {
         int len1 = word1.length();
@@ -21,22 +20,13 @@ public class EditDistanceService {
         // Fill dp[][] in a bottom-up manner
         for (int i = 0; i <= len1; i++) {
             for (int j = 0; j <= len2; j++) {
-                // If the first word is empty, insert all characters of the second word
                 if (i == 0) {
                     dp[i][j] = j; // j insertions
-                }
-                // If the second word is empty, remove all characters of the first word
-                else if (j == 0) {
+                } else if (j == 0) {
                     dp[i][j] = i; // i deletions
-                }
-                // If the last characters of both words are the same, ignore the last character
-                // and recur for the remaining words
-                else if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                } else if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
                     dp[i][j] = dp[i - 1][j - 1];
-                }
-                // If the last characters are different, consider all possibilities:
-                // insert, delete, or replace the last character
-                else {
+                } else {
                     dp[i][j] = 1 + Math.min(dp[i - 1][j], // Remove
                             Math.min(dp[i][j - 1],    // Insert
                                     dp[i - 1][j - 1])); // Replace
@@ -44,21 +34,12 @@ public class EditDistanceService {
             }
         }
 
-        // The final value in dp[len1][len2] will be the answer
         return dp[len1][len2];
     }
 
     public List<Laptop> findMatches(List<Laptop> laptops, String searchTerm, int maxEditDistance) {
-//        if (searchTerm == null || searchTerm.isEmpty()) {
-//            return List.of(new Laptop("Invalid input: search term cannot be null or empty."));
-//        }
-//        if (laptops == null || laptops.isEmpty()) {
-//            return List.of(new Laptop("Dictionary is empty."));
-//        }
-
         List<MatchResult> matches = new ArrayList<>();
 
-        // Determine the number of words in the search term (n)
         int numSpaces = searchTerm.split("\\s+").length - 1; // Spaces define word count
         int nGramSize = numSpaces + 1; // n-grams size for vocabulary
 
@@ -66,49 +47,73 @@ public class EditDistanceService {
             if (laptop == null || laptop.getProductName() == null) continue;
 
             String name = laptop.getProductName().toLowerCase();
-            System.out.println("Checking product: " + name);  // Debug: show the product being checked
+            System.out.println("Checking product: " + name);
 
-            // Tokenize the entry into words
             String[] words = name.split("\\s+");
 
-            // Check individual words for edit distance
             for (String word : words) {
                 if (word == null || word.isEmpty()) continue;
 
                 int currentEditDistance = calculateEditDistance(searchTerm.toLowerCase(), word.toLowerCase());
                 if (currentEditDistance <= maxEditDistance) {
                     matches.add(new MatchResult(laptop, currentEditDistance, 0));
-                    System.out.println("Word match found: " + word);  // Debug: show word match
-                    break; // No need to check further words for this entry
+                    System.out.println("Word match found: " + word);
+                    break;
                 }
             }
 
-            // Generate n-grams (sequences of nGramSize words)
             List<String> nGrams = generateNGrams(words, nGramSize);
 
             for (String nGram : nGrams) {
-                // Case-insensitive comparison for n-grams
                 int currentEditDistance = calculateEditDistance(searchTerm.toLowerCase(), nGram.toLowerCase());
                 if (currentEditDistance <= maxEditDistance) {
-                    matches.add(new MatchResult(laptop, currentEditDistance, 1)); // n-gram match
-                    System.out.println("N-gram match found: " + nGram);  // Debug: show n-gram match
-                    break; // No need to check further n-grams for this entry
+                    matches.add(new MatchResult(laptop, currentEditDistance, 1));
+                    System.out.println("N-gram match found: " + nGram);
+                    break;
                 }
             }
         }
 
-        // Sort matches: first by full edit distance, then by n-gram distance
-        matches.sort(Comparator
-                .comparingInt(MatchResult::getFullEditDistance)
-                .thenComparingInt(MatchResult::getFirstNGramDistance));
+        // Sort matches using QuickSort
+        quickSort(matches, 0, matches.size() - 1);
 
-        // Return the sorted list of laptops
         return matches.stream()
                 .map(MatchResult::getLaptop)
                 .collect(Collectors.toList());
     }
 
-    // Helper method to generate overlapping n-grams
+    // QuickSort implementation
+    private void quickSort(List<MatchResult> list, int low, int high) {
+        if (low < high) {
+            int pivotIndex = partition(list, low, high);
+            quickSort(list, low, pivotIndex - 1);
+            quickSort(list, pivotIndex + 1, high);
+        }
+    }
+
+    private int partition(List<MatchResult> list, int low, int high) {
+        MatchResult pivot = list.get(high);
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (list.get(j).getFullEditDistance() < pivot.getFullEditDistance() ||
+                    (list.get(j).getFullEditDistance() == pivot.getFullEditDistance() &&
+                            list.get(j).getFirstNGramDistance() < pivot.getFirstNGramDistance())) {
+                i++;
+                swap(list, i, j);
+            }
+        }
+
+        swap(list, i + 1, high);
+        return i + 1;
+    }
+
+    private void swap(List<MatchResult> list, int i, int j) {
+        MatchResult temp = list.get(i);
+        list.set(i, list.get(j));
+        list.set(j, temp);
+    }
+
     private List<String> generateNGrams(String[] words, int nGramSize) {
         List<String> nGrams = new ArrayList<>();
         for (int i = 0; i <= words.length - nGramSize; i++) {
@@ -122,7 +127,6 @@ public class EditDistanceService {
         return nGrams;
     }
 
-    // MatchResult class for storing laptop and distances
     private static class MatchResult {
         private final Laptop laptop;
         private final int fullEditDistance;
